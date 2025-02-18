@@ -63,29 +63,29 @@ class _ContentListState extends State<ContentList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: "Filtrer par distance (km)",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            floating: true,  // Cela permet de garder l'AppBar flottante en haut
+            pinned: true,    // Cela garde la barre en haut lorsque tu fais défiler
+            title: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: const InputDecoration(
+                  labelText: "Filtrer par distance (km)",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.search),
+                  contentPadding: EdgeInsets.symmetric(vertical: 9.0),  // Ajuste cette valeur si nécessaire
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: _filterItems,
               ),
-              keyboardType: TextInputType.number,
-              onChanged: _filterItems,
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: filteredItems.length,
-              itemBuilder: (context, index) {
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (context, index) {
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -123,6 +123,7 @@ class _ContentListState extends State<ContentList> {
                   ),
                 );
               },
+              childCount: filteredItems.length,
             ),
           ),
         ],

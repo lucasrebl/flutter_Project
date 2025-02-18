@@ -9,7 +9,6 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
@@ -31,7 +30,18 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         backgroundColor: Colors.blue,
       ),
-      body: _pages[_currentIndex],
+      body: Column(
+        children: [
+          // Ajout d'un espace entre l'AppBar et la search bar
+          SizedBox(height: 10), // Tu peux ajuster cette valeur selon tes besoins
+
+          // Utiliser Expanded pour le contenu pour qu'il prenne l'espace restant
+          Expanded(
+            child: _pages[_currentIndex],
+          ),
+        ],
+      ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -48,3 +58,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
