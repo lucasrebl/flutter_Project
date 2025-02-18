@@ -15,8 +15,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const ContentList(),
+    const BlankPage(title: 'Page 1'),
+    const BlankPage(title: 'Page 2'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +43,29 @@ class MyHomePage extends StatelessWidget {
         ),
         backgroundColor: Colors.blue,
       ),
-      body: const ContentList(),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pageview),
+            label: 'Page 1',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pages),
+            label: 'Page 2',
+          ),
+        ],
+      ),
     );
   }
 }
@@ -88,6 +123,22 @@ class ContentList extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class BlankPage extends StatelessWidget {
+  final String title;
+
+  const BlankPage({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      ),
     );
   }
 }
