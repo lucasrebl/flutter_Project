@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:random_name_generator/random_name_generator.dart'; // Import du package
+import 'package:random_name_generator/random_name_generator.dart';
 import '../pages/detail_screen.dart';
 
 class ContentList extends StatelessWidget {
@@ -9,20 +9,20 @@ class ContentList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Random random = Random();
-    final randomNames = RandomNames(Zone.us); // Générateur de noms
+    final randomNames = RandomNames(Zone.france);
 
     List<Map<String, dynamic>> items = List.generate(
       10,
           (index) {
         int distance = random.nextInt(50) + 1;
-        String phoneNumber = "06${random.nextInt(100000000).toString().padLeft(8, '0')}";
-        String randomName = randomNames.fullName(); // Génère un nom complet
+        String phoneNumber = "07${random.nextInt(100000000).toString().padLeft(8, '0')}";
+        String randomName = randomNames.fullName();
 
         return {
-          "title": randomName, // Utilisation du nom aléatoire généré
-          "phoneNumber": phoneNumber, // Numéro de téléphone
+          "title": randomName,
+          "phoneNumber": phoneNumber,
           "imageUrl": "https://picsum.photos/200/300?random=${index + 1}",
-          "distanceKm": distance, // Distance stockée séparément
+          "distanceKm": distance,
         };
       },
     );
@@ -38,7 +38,7 @@ class ContentList extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => DetailScreen(
                   title: items[index]["title"]!,
-                  description: items[index]["phoneNumber"]!,
+                  phoneNumber: items[index]["phoneNumber"]!,
                   imageUrl: items[index]["imageUrl"]!,
                   distanceKm: items[index]["distanceKm"].toString(),
                 ),
@@ -53,7 +53,7 @@ class ContentList extends StatelessWidget {
                 backgroundImage: NetworkImage(items[index]["imageUrl"]!),
               ),
               title: Text(
-                items[index]["title"]!, // Nom généré aléatoirement
+                items[index]["title"]!,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
