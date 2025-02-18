@@ -28,7 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
           ),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFFFB266A),
       ),
       body: Column(
         children: [
@@ -52,6 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           BottomNavigationBarItem(icon: Icon(Icons.pages), label: 'Page 2'),
         ],
+        backgroundColor: const Color(0xFFFB266A),
       ),
     );
   }

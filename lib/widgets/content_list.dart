@@ -113,7 +113,7 @@ class _ContentListState extends State<ContentList> {
                       ),
                       subtitle: Text(
                         "📞 ${filteredItems[index]["phoneNumber"]!}",
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       trailing: Text(
                         "${filteredItems[index]["distanceKm"]} km",
