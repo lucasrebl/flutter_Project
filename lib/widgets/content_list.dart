@@ -66,8 +66,8 @@ class _ContentListState extends State<ContentList> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            floating: true,  // Cela permet de garder l'AppBar flottante en haut
-            pinned: true,    // Cela garde la barre en haut lorsque tu fais défiler
+            floating: true,
+            pinned: true,
             title: Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
@@ -76,7 +76,7 @@ class _ContentListState extends State<ContentList> {
                   labelText: "Filtrer par distance (km)",
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.search),
-                  contentPadding: EdgeInsets.symmetric(vertical: 9.0),  // Ajuste cette valeur si nécessaire
+                  contentPadding: EdgeInsets.symmetric(vertical: 9.0),
                 ),
                 keyboardType: TextInputType.number,
                 onChanged: _filterItems,

@@ -24,7 +24,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Center(
           child: Text(
-            "Mon App",
+            "Max ton pote",
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
           ),
         ),
@@ -32,10 +32,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          // Ajout d'un espace entre l'AppBar et la search bar
-          SizedBox(height: 10), // Tu peux ajuster cette valeur selon tes besoins
+          SizedBox(height: 10),
 
-          // Utiliser Expanded pour le contenu pour qu'il prenne l'espace restant
           Expanded(
             child: _pages[_currentIndex],
           ),
