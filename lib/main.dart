@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'pages/home_page.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(); // Charge les variables d'environnement
+  String accessToken = dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
+  MapboxOptions.setAccessToken(accessToken);
   runApp(const MyApp());
 }
 

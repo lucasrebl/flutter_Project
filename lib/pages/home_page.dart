@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/content_list.dart';
 import 'profile_page.dart';
-import 'blank_page.dart';
+import 'maps_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -15,7 +15,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = [
     const ContentList(),
     const ProfilePage(),
-    const BlankPage(title: 'Page 2'),
+    const MapsPage(),
   ];
 
   @override
@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.pages), label: 'Page 2'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Maps'),
         ],
         backgroundColor: const Color(0xFFFB266A),
       ),
