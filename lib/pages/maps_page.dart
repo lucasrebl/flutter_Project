@@ -13,14 +13,16 @@ class _MapsPageState extends State<MapsPage> {
   MapWidget? mapWidget;
   late MapboxMap mapboxMap;
 
+  // Fonction d'initialisation de la carte
   @override
   void initState() {
     super.initState();
     _initMap();
   }
 
+  // Fonction pour initialiser la carte et obtenir la position de l'utilisateur
   Future<void> _initMap() async {
-    geo.Position position = await _getUserLocation();
+    geo.Position position = await _getUserLocation(); // Obtention de la position de l'utilisateur
 
     setState(() {
       mapWidget = MapWidget(
@@ -32,32 +34,38 @@ class _MapsPageState extends State<MapsPage> {
           zoom: 15.0,
         ),
         onMapCreated: (MapboxMap map) {
-          mapboxMap = map;
-          _enableLocation();
+          mapboxMap = map; // Attribution de la carte créée à la variable mapboxMap
+          _enableLocation(); // Activation de la localisation
         },
       );
     });
   }
 
+  // Fonction pour obtenir la position de l'utilisateur avec la gestion des permissions
   Future<geo.Position> _getUserLocation() async {
-    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
+    geo.LocationPermission permission = await geo.Geolocator.checkPermission(); // Vérification de la permission de localisation
+
+    // Gestion des permissions de localisation
     if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
       permission = await geo.Geolocator.requestPermission();
       if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
         throw Exception("Permission de localisation refusée");
       }
     }
-    return await geo.Geolocator.getCurrentPosition();
+
+    return await geo.Geolocator.getCurrentPosition(); // Renvoie de la position actuelle de l'utilisateur
   }
 
+  // Fonction pour activer la fonctionnalité de localisation sur la carte
   void _enableLocation() {
     mapboxMap.location.updateSettings(LocationComponentSettings(
-      enabled: true,
-      pulsingEnabled: true,
+      enabled: true, // Activation de la composante de localisation
+      pulsingEnabled: true, // Activation de l'effet de pulsation
       pulsingColor: Colors.blue.value,
     ));
   }
 
+  // Fonction pour afficher le widget de la carte ou un indicateur de chargement
   @override
   Widget build(BuildContext context) {
     return Scaffold(
