@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart' as geo; // Alias pour éviter le conflit
+import 'package:geolocator/geolocator.dart' as geo;
 
 class MapsPage extends StatefulWidget {
   const MapsPage({super.key});
@@ -10,7 +10,7 @@ class MapsPage extends StatefulWidget {
 }
 
 class _MapsPageState extends State<MapsPage> {
-  MapWidget? mapWidget;  // Déclarez mapWidget comme nullable
+  MapWidget? mapWidget;
   late MapboxMap mapboxMap;
 
   @override
@@ -23,11 +23,10 @@ class _MapsPageState extends State<MapsPage> {
     geo.Position position = await _getUserLocation();
 
     setState(() {
-      // Initialisation de la carte seulement une fois les coordonnées récupérées
       mapWidget = MapWidget(
         key: const ValueKey("mapWidget"),
         cameraOptions: CameraOptions(
-          center: Point( // ✅ Utilisation du bon Point de mapbox_maps_flutter
+          center: Point(
             coordinates: Position(position.longitude, position.latitude),
           ),
           zoom: 15.0,
@@ -63,8 +62,8 @@ class _MapsPageState extends State<MapsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: mapWidget == null
-          ? const Center(child: CircularProgressIndicator()) // Affichage du chargement tant que la carte n'est pas prête
-          : mapWidget!,  // Utilisation de mapWidget une fois initialisé
+          ? const Center(child: CircularProgressIndicator())
+          : mapWidget!,
     );
   }
 }
