@@ -65,6 +65,18 @@ class _MapsPageState extends State<MapsPage> {
     ));
   }
 
+  // Fonction pour recentrer la carte sur la position de l'utilisateur
+  void _recenterMap() async {
+    geo.Position position = await _getUserLocation(); // Obtention de la position actuelle
+    mapboxMap.flyTo(
+      CameraOptions(
+        center: Point(coordinates: Position(position.longitude, position.latitude)),
+        zoom: 15.0, // Niveau de zoom
+      ),
+      MapAnimationOptions(duration: 2000), // La durée doit être en millisecondes (2000 ms = 2 secondes)
+    );
+  }
+
   // Fonction pour afficher le widget de la carte ou un indicateur de chargement
   @override
   Widget build(BuildContext context) {
@@ -72,6 +84,10 @@ class _MapsPageState extends State<MapsPage> {
       body: mapWidget == null
           ? const Center(child: CircularProgressIndicator())
           : mapWidget!,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _recenterMap, // Recentrage de la carte au clic
+        child: const Icon(Icons.my_location),
+      ),
     );
   }
 }
