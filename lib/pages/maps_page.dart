@@ -16,6 +16,7 @@ class _MapsPageState extends State<MapsPage> {
   MapWidget? mapWidget;
   late MapboxMap mapboxMap;
   PointAnnotationManager? pointAnnotationManager;
+  late geo.Position _currentPosition;
 
   @override
   void initState() {
@@ -24,14 +25,14 @@ class _MapsPageState extends State<MapsPage> {
   }
 
   Future<void> _initMap() async {
-    geo.Position position = await _getUserLocation(); // Obtention de la position de l'utilisateur
+    _currentPosition = await _getUserLocation(); // Obtention de la position de l'utilisateur
 
     setState(() {
       mapWidget = MapWidget(
         key: const ValueKey("mapWidget"),
         cameraOptions: CameraOptions(
           center: Point(
-            coordinates: Position(position.longitude, position.latitude),
+            coordinates: Position(_currentPosition.longitude, _currentPosition.latitude),
           ),
           zoom: 15.0,
         ),
@@ -41,6 +42,19 @@ class _MapsPageState extends State<MapsPage> {
           await _addAnnotation(); // Ajout de l'annotation
         },
       );
+    });
+
+    // Écoute des changements de position de l'utilisateur
+    geo.Geolocator.getPositionStream(
+      locationSettings: geo.LocationSettings(
+        accuracy: geo.LocationAccuracy.high,
+        distanceFilter: 10,
+      ),
+    ).listen((geo.Position position) {
+      setState(() {
+        _currentPosition = position;
+      });
+      _updateCameraPosition(position); // Mise à jour de la caméra avec la nouvelle position
     });
   }
 
@@ -54,10 +68,10 @@ class _MapsPageState extends State<MapsPage> {
 
     // Créer les options pour l'annotation
     PointAnnotationOptions pointAnnotationOptions = PointAnnotationOptions(
-      geometry: Point(coordinates: Position(2.3522, 48.8566)), // Exemples de coordonnées (Paris)
-      image: imageData,
-      iconSize: 0.1,
-      iconAnchor: IconAnchor.BOTTOM
+        geometry: Point(coordinates: Position(2.3522, 48.8566)), // Exemples de coordonnées (Paris)
+        image: imageData,
+        iconSize: 0.1,
+        iconAnchor: IconAnchor.BOTTOM
     );
 
     // Ajouter l'annotation à la carte
@@ -87,6 +101,17 @@ class _MapsPageState extends State<MapsPage> {
     ));
   }
 
+  // Fonction pour mettre à jour la position de la caméra en fonction de la position de l'utilisateur
+  void _updateCameraPosition(geo.Position position) {
+    mapboxMap.flyTo(
+      CameraOptions(
+        center: Point(coordinates: Position(position.longitude, position.latitude)),
+        zoom: 15.0,
+      ),
+      MapAnimationOptions(duration: 1000),
+    );
+  }
+
   // Fonction pour recentrer la carte
   void _recenterMap() async {
     geo.Position position = await _getUserLocation();
@@ -112,4 +137,3 @@ class _MapsPageState extends State<MapsPage> {
     );
   }
 }
-
