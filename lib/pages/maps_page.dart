@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart' as geo;
+import 'package:flutter/services.dart'; // Pour rootBundle
+import 'dart:typed_data'; // Pour manipuler les données d'image
+
 
 class MapsPage extends StatefulWidget {
   const MapsPage({super.key});
@@ -12,15 +15,14 @@ class MapsPage extends StatefulWidget {
 class _MapsPageState extends State<MapsPage> {
   MapWidget? mapWidget;
   late MapboxMap mapboxMap;
+  PointAnnotationManager? pointAnnotationManager;
 
-  // Fonction d'initialisation de la carte
   @override
   void initState() {
     super.initState();
     _initMap();
   }
 
-  // Fonction pour initialiser la carte et obtenir la position de l'utilisateur
   Future<void> _initMap() async {
     geo.Position position = await _getUserLocation(); // Obtention de la position de l'utilisateur
 
@@ -33,19 +35,39 @@ class _MapsPageState extends State<MapsPage> {
           ),
           zoom: 15.0,
         ),
-        onMapCreated: (MapboxMap map) {
-          mapboxMap = map; // Attribution de la carte créée à la variable mapboxMap
+        onMapCreated: (MapboxMap map) async {
+          mapboxMap = map;
           _enableLocation(); // Activation de la localisation
+          await _addAnnotation(); // Ajout de l'annotation
         },
       );
     });
   }
 
-  // Fonction pour obtenir la position de l'utilisateur avec la gestion des permissions
-  Future<geo.Position> _getUserLocation() async {
-    geo.LocationPermission permission = await geo.Geolocator.checkPermission(); // Vérification de la permission de localisation
+  // Fonction pour ajouter une annotation à la carte
+  Future<void> _addAnnotation() async {
+    pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
 
-    // Gestion des permissions de localisation
+    // Charger l'image depuis les assets
+    final ByteData bytes = await rootBundle.load('assets/marker.png');
+    final Uint8List imageData = bytes.buffer.asUint8List();
+
+    // Créer les options pour l'annotation
+    PointAnnotationOptions pointAnnotationOptions = PointAnnotationOptions(
+      geometry: Point(coordinates: Position(2.3522, 48.8566)), // Exemples de coordonnées (Paris)
+      image: imageData,
+      iconSize: 0.1,
+      iconAnchor: IconAnchor.BOTTOM
+    );
+
+    // Ajouter l'annotation à la carte
+    pointAnnotationManager?.create(pointAnnotationOptions);
+  }
+
+  // Fonction pour obtenir la position de l'utilisateur
+  Future<geo.Position> _getUserLocation() async {
+    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
+
     if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
       permission = await geo.Geolocator.requestPermission();
       if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
@@ -53,31 +75,30 @@ class _MapsPageState extends State<MapsPage> {
       }
     }
 
-    return await geo.Geolocator.getCurrentPosition(); // Renvoie de la position actuelle de l'utilisateur
+    return await geo.Geolocator.getCurrentPosition();
   }
 
-  // Fonction pour activer la fonctionnalité de localisation sur la carte
+  // Fonction pour activer la fonctionnalité de localisation
   void _enableLocation() {
     mapboxMap.location.updateSettings(LocationComponentSettings(
-      enabled: true, // Activation de la composante de localisation
-      pulsingEnabled: true, // Activation de l'effet de pulsation
+      enabled: true,
+      pulsingEnabled: true,
       pulsingColor: Colors.blue.value,
     ));
   }
 
-  // Fonction pour recentrer la carte sur la position de l'utilisateur
+  // Fonction pour recentrer la carte
   void _recenterMap() async {
-    geo.Position position = await _getUserLocation(); // Obtention de la position actuelle
+    geo.Position position = await _getUserLocation();
     mapboxMap.flyTo(
       CameraOptions(
         center: Point(coordinates: Position(position.longitude, position.latitude)),
-        zoom: 15.0, // Niveau de zoom
+        zoom: 15.0,
       ),
-      MapAnimationOptions(duration: 2000), // La durée doit être en millisecondes (2000 ms = 2 secondes)
+      MapAnimationOptions(duration: 2000),
     );
   }
 
-  // Fonction pour afficher le widget de la carte ou un indicateur de chargement
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,9 +106,10 @@ class _MapsPageState extends State<MapsPage> {
           ? const Center(child: CircularProgressIndicator())
           : mapWidget!,
       floatingActionButton: FloatingActionButton(
-        onPressed: _recenterMap, // Recentrage de la carte au clic
+        onPressed: _recenterMap,
         child: const Icon(Icons.my_location),
       ),
     );
   }
 }
+
