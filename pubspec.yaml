@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   random_name_generator: ^1.0.0
   faker: ^2.1.0
-  mapbox_maps_flutter: ^2.0.0
+  mapbox_maps_flutter: ^2.6.0
   flutter_dotenv: ^5.1.0
   geolocator: ^13.0.2
 

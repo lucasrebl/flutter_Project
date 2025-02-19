@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart' as geo; // Alias pour éviter le conflit
 
 class MapsPage extends StatefulWidget {
   const MapsPage({super.key});
@@ -10,23 +11,57 @@ class MapsPage extends StatefulWidget {
 
 class _MapsPageState extends State<MapsPage> {
   late MapWidget mapWidget;
+  late MapboxMap mapboxMap;
+
+  @override
+  void initState() {
+    super.initState();
+    _initMap();
+  }
+
+  Future<void> _initMap() async {
+    geo.Position position = await _getUserLocation();
+
+    setState(() {
+      mapWidget = MapWidget(
+        key: const ValueKey("mapWidget"),
+        cameraOptions: CameraOptions(
+          center: Point( // ✅ Utilisation du bon Point de mapbox_maps_flutter
+            coordinates: Position(position.longitude, position.latitude),
+          ),
+          zoom: 15.0,
+        ),
+        onMapCreated: (MapboxMap map) {
+          mapboxMap = map;
+          _enableLocation();
+        },
+      );
+    });
+  }
+
+  Future<geo.Position> _getUserLocation() async {
+    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
+      permission = await geo.Geolocator.requestPermission();
+      if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
+        throw Exception("Permission de localisation refusée");
+      }
+    }
+    return await geo.Geolocator.getCurrentPosition();
+  }
+
+  void _enableLocation() {
+    mapboxMap.location.updateSettings(LocationComponentSettings(
+      enabled: true,
+      pulsingEnabled: true,
+      pulsingColor: Colors.blue.value,
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
-    CameraOptions camera = CameraOptions(
-      center: Point(coordinates: Position(-98.0, 39.5)),
-      zoom: 3.0,
-      bearing: 0,
-      pitch: 0,
-    );
-
-    mapWidget = MapWidget(
-      key: const ValueKey("mapWidget"),
-      cameraOptions: camera,
-    );
-
     return Scaffold(
-      body: mapWidget,
+      body: mapWidget ?? const Center(child: CircularProgressIndicator()),
     );
   }
 }
