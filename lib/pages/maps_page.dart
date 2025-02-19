@@ -10,7 +10,7 @@ class MapsPage extends StatefulWidget {
 }
 
 class _MapsPageState extends State<MapsPage> {
-  late MapWidget mapWidget;
+  MapWidget? mapWidget;  // Déclarez mapWidget comme nullable
   late MapboxMap mapboxMap;
 
   @override
@@ -23,6 +23,7 @@ class _MapsPageState extends State<MapsPage> {
     geo.Position position = await _getUserLocation();
 
     setState(() {
+      // Initialisation de la carte seulement une fois les coordonnées récupérées
       mapWidget = MapWidget(
         key: const ValueKey("mapWidget"),
         cameraOptions: CameraOptions(
@@ -61,7 +62,9 @@ class _MapsPageState extends State<MapsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: mapWidget ?? const Center(child: CircularProgressIndicator()),
+      body: mapWidget == null
+          ? const Center(child: CircularProgressIndicator()) // Affichage du chargement tant que la carte n'est pas prête
+          : mapWidget!,  // Utilisation de mapWidget une fois initialisé
     );
   }
 }
