@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/content_list.dart';
 import 'profile_page.dart';
 import 'maps_page.dart';
 import 'login_page.dart';
+
+final supabase = Supabase.instance.client;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -20,6 +23,13 @@ class _MyHomePageState extends State<MyHomePage> {
     const MapsPage(),
     const LoginPage(),
   ];
+
+  void _signOut() async {
+    await supabase.auth.signOut();
+    setState(() {
+      _currentIndex = 3; // Redirige vers la page de connexion après déconnexion
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +79,8 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             IconButton(
-              icon: const Icon(Icons.login),
-              onPressed: () {
-                setState(() {
-                  _currentIndex = 3;
-                });
-              },
+              icon: const Icon(Icons.logout),
+              onPressed: _signOut,
             ),
           ],
         ),
