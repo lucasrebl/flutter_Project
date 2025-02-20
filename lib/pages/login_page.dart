@@ -69,10 +69,16 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_userId ?? 'Not signed in'),
+            Image.asset(
+              'assets/MaxTonPote.png',
+              width: 400,
+              height: 400,
+            ),
+            const SizedBox(height: 20),
+            Text(_userId ?? 'Veuillez vous connecter pour accéder à l\'application'),
             ElevatedButton(
               onPressed: _signInWithGoogle,
-              child: const Text('Sign in with Google'),
+              child: const Text('Connexion avec Google'),
             ),
           ],
         ),
