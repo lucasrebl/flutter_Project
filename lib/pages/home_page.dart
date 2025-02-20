@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/content_list.dart';
 import 'profile_page.dart';
 import 'maps_page.dart';
+import 'login_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -9,6 +10,7 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
+
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
@@ -16,6 +18,7 @@ class _MyHomePageState extends State<MyHomePage> {
     const ContentList(),
     const ProfilePage(),
     const MapsPage(),
+    const LoginPage(),
   ];
 
   @override
@@ -32,29 +35,50 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Column(
         children: [
-          SizedBox(height: 10),
-
-          Expanded(
-            child: _pages[_currentIndex],
-          ),
+          const SizedBox(height: 10),
+          Expanded(child: _pages[_currentIndex]),
         ],
       ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Maps'),
-        ],
-        backgroundColor: const Color(0xFFFB266A),
+      bottomNavigationBar: BottomAppBar(
+        color: const Color(0xFFFB266A),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () {
+                setState(() {
+                  _currentIndex = 0;
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () {
+                setState(() {
+                  _currentIndex = 1;
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.map),
+              onPressed: () {
+                setState(() {
+                  _currentIndex = 2;
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.login),
+              onPressed: () {
+                setState(() {
+                  _currentIndex = 3;
+                });
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
