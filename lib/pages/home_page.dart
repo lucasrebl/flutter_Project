@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/content_list.dart';
 import 'profile_page.dart';
@@ -21,14 +22,18 @@ class _MyHomePageState extends State<MyHomePage> {
     const ContentList(),
     const ProfilePage(),
     const MapsPage(),
-    const LoginPage(),
   ];
 
-  void _signOut() async {
+  Future<void> _signOut() async {
+    await GoogleSignIn().disconnect();
     await supabase.auth.signOut();
-    setState(() {
-      _currentIndex = 3; // Redirige vers la page de connexion après déconnexion
-    });
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    }
   }
 
   @override
