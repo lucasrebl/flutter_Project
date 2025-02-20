@@ -20,10 +20,32 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
+    // Vérifier l'état de la session à l'initialisation
+    final session = supabase.auth.currentSession;
+    if (session != null) {
+      _userId = session.user.id;
+      // Si l'utilisateur est déjà connecté, redirige vers la page d'accueil
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage()),
+        );
+      });
+    }
+
+    // Écouter les changements d'état de l'authentification
     supabase.auth.onAuthStateChange.listen((data) {
       setState(() {
         _userId = data.session?.user.id;
       });
+
+      // Si l'utilisateur est connecté, redirige vers la page d'accueil
+      if (_userId != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage()),
+        );
+      }
     });
   }
 
@@ -86,4 +108,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
