@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'providers/user_provider.dart'; // Importez votre UserProvider
 import 'pages/login_page.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(); // Charger les variables d'environnement
+  await dotenv.load();
   String accessToken = dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
   MapboxOptions.setAccessToken(accessToken);
 
-  // Initialisation de Supabase
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_KEY'] ?? '',
   );
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => UserProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -26,8 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const LoginPage(), // La page de connexion est affichée au démarrage
+      home: const LoginPage(),
     );
   }
 }
-

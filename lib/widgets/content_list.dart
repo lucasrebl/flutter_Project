@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'package:geolocator/geolocator.dart' as geo;
-import '../services/location_service.dart';  // Importer le service de géolocalisation
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 import '../pages/detail_screen.dart';
-import '../services/all_user_services.dart';
-import '../pages/maps_page.dart';
+import 'dart:math';
 
 class ContentList extends StatefulWidget {
   const ContentList({super.key});
@@ -15,66 +13,28 @@ class ContentList extends StatefulWidget {
 
 class _ContentListState extends State<ContentList> {
   TextEditingController _searchController = TextEditingController();
-  List<Map<String, dynamic>> items = [];
   List<Map<String, dynamic>> filteredItems = [];
 
   @override
   void initState() {
     super.initState();
-    _loadUsers();
+
+    // Use addPostFrameCallback to load users after the initial build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userProvider.loadUsers();
+    });
   }
 
-  // Fonction pour charger les utilisateurs et calculer la distance
-  void _loadUsers() async {
-    try {
-      // Récupérer les utilisateurs
-      List<Map<String, dynamic>> users = await AllUserServices.getAllUsersExceptCurrent();
-
-      // Récupérer la position actuelle de l'utilisateur via le service de géolocalisation
-      geo.Position? currentPosition = await LocationService.getUserLocation();
-
-      if (currentPosition == null) {
-        print("Impossible de récupérer la position de l'utilisateur.");
-        return;
-      }
-
-      // Calculer la distance pour chaque utilisateur
-      List<Map<String, dynamic>> updatedUsers = users.map((user) {
-        double userLat = user["latitude"] ?? 0.0;
-        double userLng = user["longitude"] ?? 0.0;
-
-        double distanceInMeters = geo.Geolocator.distanceBetween(
-            currentPosition.latitude, currentPosition.longitude, // Position actuelle
-            userLat, userLng // Position de l'autre utilisateur
-        );
-
-        double distanceInKm = distanceInMeters / 1000; // Conversion en km
-
-        return {
-          ...user,
-          "distanceKm": distanceInKm.toStringAsFixed(1), // Arrondi à 1 décimale
-        };
-      }).toList();
-
-      // Mettre à jour l'état avec les nouvelles valeurs
-      setState(() {
-        items = updatedUsers;
-        filteredItems = List.from(updatedUsers);
-      });
-    } catch (e) {
-      print("Erreur lors du chargement des utilisateurs : $e");
-    }
-  }
-
-  // Fonction pour filtrer la liste en fonction de la distance saisie
   void _filterItems(String query) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (query.isEmpty) {
       setState(() {
-        filteredItems = List.from(items);
+        filteredItems = List.from(userProvider.users);
       });
     } else {
       setState(() {
-        filteredItems = items.where((item) {
+        filteredItems = userProvider.users.where((item) {
           return item["distanceKm"].toString().startsWith(query);
         }).toList();
       });
@@ -83,6 +43,14 @@ class _ContentListState extends State<ContentList> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
+    if (userProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    filteredItems = userProvider.users;
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
