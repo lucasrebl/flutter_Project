@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math';
-import 'package:random_name_generator/random_name_generator.dart';
 import '../pages/detail_screen.dart';
 import '../services/all_user_services.dart';  // Assurez-vous d'importer votre service
 
@@ -90,6 +88,12 @@ class _ContentListState extends State<ContentList> {
                           imageUrl: filteredItems[index]["avatar_url"] ??
                               "https://picsum.photos/200/300?random=${Random().nextInt(1000)}", // Générer une image si l'URL est vide
                           distanceKm: filteredItems[index]["distanceKm"].toString(),
+                          email: filteredItems[index]["email"] ?? "Email non disponible",
+                          description: filteredItems[index]["description"] ?? "Pas de description",
+                          age: filteredItems[index]["age"] ?? 0,
+                          profession: filteredItems[index]["profession"] ?? "Inconnu",
+                          latitude: filteredItems[index]["latitude"] ?? 0.0,
+                          longitude: filteredItems[index]["longitude"] ?? 0.0,
                         ),
                       ),
                     );
@@ -112,10 +116,10 @@ class _ContentListState extends State<ContentList> {
                         "📞 ${filteredItems[index]["phone_number"] ?? "Numéro non disponible"}",
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                      trailing: Text(
-                        "${filteredItems[index]["distanceKm"]} km",
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
-                      ),
+                      //trailing: Text(
+                        //"${filteredItems[index]["distanceKm"]} km",
+                        //style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+                      //),
                     ),
                   ),
                 );
