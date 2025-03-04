@@ -27,7 +27,9 @@ class DetailScreen extends StatelessWidget {
                   height: 150,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(imageUrl),
+                      image: NetworkImage(imageUrl.isEmpty
+                          ? "https://picsum.photos/200/300?random"
+                          : imageUrl),
                       fit: BoxFit.cover,
                     ),
                     shape: BoxShape.circle,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math';
 import 'package:random_name_generator/random_name_generator.dart';
 import '../pages/detail_screen.dart';
+import '../services/all_user_services.dart';  // Assurez-vous d'importer votre service
 
 class ContentList extends StatefulWidget {
   const ContentList({super.key});
@@ -18,29 +20,20 @@ class _ContentListState extends State<ContentList> {
   @override
   void initState() {
     super.initState();
-    _generateItems();
+    _loadUsers();
   }
 
-  void _generateItems() {
-    Random random = Random();
-    final randomNames = RandomNames(Zone.france);
-
-    items = List.generate(
-      10,
-          (index) {
-        int distance = random.nextInt(50) + 1;
-        String phoneNumber = "07${random.nextInt(100000000).toString().padLeft(8, '0')}";
-        String randomName = randomNames.fullName();
-
-        return {
-          "title": randomName,
-          "phoneNumber": phoneNumber,
-          "imageUrl": "https://picsum.photos/200/300?random=${index + 1}",
-          "distanceKm": distance,
-        };
-      },
-    );
-    filteredItems = List.from(items);
+  // Fonction pour charger les utilisateurs depuis Supabase
+  void _loadUsers() async {
+    try {
+      List<Map<String, dynamic>> users = await AllUserServices.getAllUsersExceptCurrent();
+      setState(() {
+        items = users;
+        filteredItems = List.from(users);
+      });
+    } catch (e) {
+      print("Erreur lors du chargement des utilisateurs : $e");
+    }
   }
 
   void _filterItems(String query) {
@@ -92,9 +85,10 @@ class _ContentListState extends State<ContentList> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => DetailScreen(
-                          title: filteredItems[index]["title"]!,
-                          phoneNumber: filteredItems[index]["phoneNumber"]!,
-                          imageUrl: filteredItems[index]["imageUrl"]!,
+                          title: filteredItems[index]["name"] ?? "Nom inconnu",
+                          phoneNumber: filteredItems[index]["phone_number"] ?? "Numéro non disponible",
+                          imageUrl: filteredItems[index]["avatar_url"] ??
+                              "https://picsum.photos/200/300?random=${Random().nextInt(1000)}", // Générer une image si l'URL est vide
                           distanceKm: filteredItems[index]["distanceKm"].toString(),
                         ),
                       ),
@@ -105,14 +99,17 @@ class _ContentListState extends State<ContentList> {
                     child: ListTile(
                       leading: CircleAvatar(
                         radius: 25,
-                        backgroundImage: NetworkImage(filteredItems[index]["imageUrl"]!),
+                        backgroundImage: NetworkImage(
+                          filteredItems[index]["avatar_url"] ??
+                              "https://picsum.photos/200/300?random=${Random().nextInt(1000)}", // Générer une image si l'URL est vide
+                        ),
                       ),
                       title: Text(
-                        filteredItems[index]["title"]!,
+                        filteredItems[index]["name"] ?? "Nom inconnu",
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        "📞 ${filteredItems[index]["phoneNumber"]!}",
+                        "📞 ${filteredItems[index]["phone_number"] ?? "Numéro non disponible"}",
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       trailing: Text(
