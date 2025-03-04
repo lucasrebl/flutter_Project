@@ -67,6 +67,8 @@ class ProfilePage extends StatelessWidget {
                       SizedBox(height: 8),
                       Text("Métier : ${userData['profession'] ?? 'Non défini'}", style: TextStyle(fontSize: 18)),
                       SizedBox(height: 8),
+                      Text("Téléphone : ${userData['phone_number'] ?? 'Aucun numéro'}", style: TextStyle(fontSize: 18)),
+                      SizedBox(height: 8),
                       Text("Description : ${userData['description'] ?? 'Aucune description'}", style: TextStyle(fontSize: 18)),
                     ],
                   ),
