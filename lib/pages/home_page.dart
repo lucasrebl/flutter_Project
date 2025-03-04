@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/content_list.dart';
 import 'profile_page.dart';
 import 'maps_page.dart';
 import 'login_page.dart';
+import '../services/database_service.dart';
 
-final supabase = Supabase.instance.client;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
