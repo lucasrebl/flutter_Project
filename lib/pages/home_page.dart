@@ -25,16 +25,27 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   Future<void> _signOut() async {
-    await GoogleSignIn().disconnect();
-    await supabase.auth.signOut();
+    try {
+      GoogleSignIn googleSignIn = GoogleSignIn();
 
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      );
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.disconnect();
+      }
+
+      await supabase.auth.signOut();
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      }
+    } catch (e) {
+      print('Erreur lors de la déconnexion : $e');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
