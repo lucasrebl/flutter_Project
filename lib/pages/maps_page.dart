@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart' as geo;
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart' as geo;
 import 'dart:typed_data'; // Pour manipuler les données d'image
-import '../services/all_user_services.dart';  // Import du service
+import '../services/location_service.dart'; // Import du service de localisation
+import '../services/all_user_services.dart';  // Import du service des utilisateurs
 
 class MapsPage extends StatefulWidget {
   const MapsPage({super.key});
@@ -24,8 +25,9 @@ class _MapsPageState extends State<MapsPage> {
     _initMap();
   }
 
+  // Initialisation de la carte
   Future<void> _initMap() async {
-    _currentPosition = await _getUserLocation(); // Obtention de la position de l'utilisateur
+    _currentPosition = await LocationService.getUserLocation(); // Utilisation de LocationService
 
     setState(() {
       mapWidget = MapWidget(
@@ -96,20 +98,6 @@ class _MapsPageState extends State<MapsPage> {
     }
   }
 
-  // Fonction pour obtenir la position de l'utilisateur
-  Future<geo.Position> _getUserLocation() async {
-    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
-
-    if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
-      permission = await geo.Geolocator.requestPermission();
-      if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
-        throw Exception("Permission de localisation refusée");
-      }
-    }
-
-    return await geo.Geolocator.getCurrentPosition();
-  }
-
   // Fonction pour activer la fonctionnalité de localisation
   void _enableLocation() {
     mapboxMap.location.updateSettings(LocationComponentSettings(
@@ -132,7 +120,7 @@ class _MapsPageState extends State<MapsPage> {
 
   // Fonction pour recentrer la carte
   void _recenterMap() async {
-    geo.Position position = await _getUserLocation();
+    geo.Position position = await LocationService.getUserLocation(); // Utilisation de LocationService
     mapboxMap.flyTo(
       CameraOptions(
         center: Point(coordinates: Position(position.longitude, position.latitude)),

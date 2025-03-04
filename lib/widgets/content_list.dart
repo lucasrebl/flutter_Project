@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:geolocator/geolocator.dart' as geo;
+import '../services/location_service.dart';  // Importer le service de géolocalisation
 import '../pages/detail_screen.dart';
-import '../services/all_user_services.dart';  // Assurez-vous d'importer votre service
+import '../services/all_user_services.dart';
+import '../pages/maps_page.dart';
 
 class ContentList extends StatefulWidget {
   const ContentList({super.key});
@@ -21,19 +24,49 @@ class _ContentListState extends State<ContentList> {
     _loadUsers();
   }
 
-  // Fonction pour charger les utilisateurs depuis Supabase
+  // Fonction pour charger les utilisateurs et calculer la distance
   void _loadUsers() async {
     try {
+      // Récupérer les utilisateurs
       List<Map<String, dynamic>> users = await AllUserServices.getAllUsersExceptCurrent();
+
+      // Récupérer la position actuelle de l'utilisateur via le service de géolocalisation
+      geo.Position? currentPosition = await LocationService.getUserLocation();
+
+      if (currentPosition == null) {
+        print("Impossible de récupérer la position de l'utilisateur.");
+        return;
+      }
+
+      // Calculer la distance pour chaque utilisateur
+      List<Map<String, dynamic>> updatedUsers = users.map((user) {
+        double userLat = user["latitude"] ?? 0.0;
+        double userLng = user["longitude"] ?? 0.0;
+
+        double distanceInMeters = geo.Geolocator.distanceBetween(
+            currentPosition.latitude, currentPosition.longitude, // Position actuelle
+            userLat, userLng // Position de l'autre utilisateur
+        );
+
+        double distanceInKm = distanceInMeters / 1000; // Conversion en km
+
+        return {
+          ...user,
+          "distanceKm": distanceInKm.toStringAsFixed(1), // Arrondi à 1 décimale
+        };
+      }).toList();
+
+      // Mettre à jour l'état avec les nouvelles valeurs
       setState(() {
-        items = users;
-        filteredItems = List.from(users);
+        items = updatedUsers;
+        filteredItems = List.from(updatedUsers);
       });
     } catch (e) {
       print("Erreur lors du chargement des utilisateurs : $e");
     }
   }
 
+  // Fonction pour filtrer la liste en fonction de la distance saisie
   void _filterItems(String query) {
     if (query.isEmpty) {
       setState(() {
@@ -41,12 +74,9 @@ class _ContentListState extends State<ContentList> {
       });
     } else {
       setState(() {
-        filteredItems = items
-            .where((item) {
-          int distance = item["distanceKm"];
-          return distance.toString().startsWith(query);
-        })
-            .toList();
+        filteredItems = items.where((item) {
+          return item["distanceKm"].toString().startsWith(query);
+        }).toList();
       });
     }
   }
@@ -86,7 +116,7 @@ class _ContentListState extends State<ContentList> {
                           title: filteredItems[index]["name"] ?? "Nom inconnu",
                           phoneNumber: filteredItems[index]["phone_number"] ?? "Numéro non disponible",
                           imageUrl: filteredItems[index]["avatar_url"] ??
-                              "https://picsum.photos/200/300?random=${Random().nextInt(1000)}", // Générer une image si l'URL est vide
+                              "https://picsum.photos/200/300?random=${Random().nextInt(1000)}",
                           distanceKm: filteredItems[index]["distanceKm"].toString(),
                           email: filteredItems[index]["email"] ?? "Email non disponible",
                           description: filteredItems[index]["description"] ?? "Pas de description",
@@ -105,7 +135,7 @@ class _ContentListState extends State<ContentList> {
                         radius: 25,
                         backgroundImage: NetworkImage(
                           filteredItems[index]["avatar_url"] ??
-                              "https://picsum.photos/200/300?random=${Random().nextInt(1000)}", // Générer une image si l'URL est vide
+                              "https://picsum.photos/200/300?random=${Random().nextInt(1000)}",
                         ),
                       ),
                       title: Text(
@@ -116,10 +146,10 @@ class _ContentListState extends State<ContentList> {
                         "📞 ${filteredItems[index]["phone_number"] ?? "Numéro non disponible"}",
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                      //trailing: Text(
-                        //"${filteredItems[index]["distanceKm"]} km",
-                        //style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
-                      //),
+                      trailing: Text(
+                        "${filteredItems[index]["distanceKm"]} km",
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+                      ),
                     ),
                   ),
                 );
