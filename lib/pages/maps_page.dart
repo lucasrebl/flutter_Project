@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart' as geo;
-import 'package:flutter/services.dart'; // Pour rootBundle
+import 'package:flutter/services.dart';
 import 'dart:typed_data'; // Pour manipuler les données d'image
-
+import '../services/all_user_services.dart';  // Import du service
 
 class MapsPage extends StatefulWidget {
   const MapsPage({super.key});
@@ -39,7 +39,7 @@ class _MapsPageState extends State<MapsPage> {
         onMapCreated: (MapboxMap map) async {
           mapboxMap = map;
           _enableLocation(); // Activation de la localisation
-          await _addAnnotation(); // Ajout de l'annotation
+          await _addAnnotationsForUsers(); // Ajout des annotations pour les utilisateurs
         },
       );
     });
@@ -58,24 +58,42 @@ class _MapsPageState extends State<MapsPage> {
     });
   }
 
-  // Fonction pour ajouter une annotation à la carte
-  Future<void> _addAnnotation() async {
-    pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
+  // Fonction pour récupérer tous les utilisateurs avec leurs coordonnées
+  Future<void> _addAnnotationsForUsers() async {
+    try {
+      final users = await AllUserServices.getAllUsersExceptCurrent();
 
-    // Charger l'image depuis les assets
-    final ByteData bytes = await rootBundle.load('assets/marker.png');
-    final Uint8List imageData = bytes.buffer.asUint8List();
+      if (users.isNotEmpty) {
+        // Charger l'image de l'annotation
+        final ByteData bytes = await rootBundle.load('assets/marker.png');
+        final Uint8List imageData = bytes.buffer.asUint8List();
 
-    // Créer les options pour l'annotation
-    PointAnnotationOptions pointAnnotationOptions = PointAnnotationOptions(
-        geometry: Point(coordinates: Position(2.3522, 48.8566)), // Exemples de coordonnées (Paris)
-        image: imageData,
-        iconSize: 0.1,
-        iconAnchor: IconAnchor.BOTTOM
-    );
+        // Créer un PointAnnotationManager pour gérer les annotations
+        pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
 
-    // Ajouter l'annotation à la carte
-    pointAnnotationManager?.create(pointAnnotationOptions);
+        // Ajouter une annotation pour chaque utilisateur
+        for (var user in users) {
+          final latitude = user['latitude'];
+          final longitude = user['longitude'];
+
+          if (latitude != null && longitude != null) {
+            PointAnnotationOptions pointAnnotationOptions = PointAnnotationOptions(
+              geometry: Point(coordinates: Position(longitude, latitude)),
+              image: imageData,
+              iconSize: 0.1,
+              iconAnchor: IconAnchor.BOTTOM,
+            );
+
+            // Ajouter l'annotation à la carte
+            pointAnnotationManager?.create(pointAnnotationOptions);
+          }
+        }
+      } else {
+        print("Aucun utilisateur trouvé");
+      }
+    } catch (e) {
+      print("Erreur lors de la récupération des utilisateurs : $e");
+    }
   }
 
   // Fonction pour obtenir la position de l'utilisateur
