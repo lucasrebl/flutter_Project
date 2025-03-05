@@ -69,7 +69,10 @@ class _ContentListState extends State<ContentList> {
         title: const Text("Utilisateurs"),
         actions: [
           IconButton(
-            icon: Icon(_isFavoriteFilter ? Icons.favorite : Icons.favorite_border),
+            icon: Icon(
+              _isFavoriteFilter ? Icons.favorite : Icons.favorite_border,
+              color: _isFavoriteFilter ? Colors.red : Colors.grey,
+            ),
             onPressed: () {
               setState(() {
                 _isFavoriteFilter = !_isFavoriteFilter;
@@ -162,7 +165,21 @@ class _ContentListState extends State<ContentList> {
                                     color: isFavorite ? Colors.red : Colors.grey,
                                   ),
                                   onPressed: () {
-                                    userProvider.toggleFavorite(userId);
+                                    userProvider.toggleFavorite(userId).then((_) {
+                                      // Mettre à jour la liste des utilisateurs après modification du favori
+                                      setState(() {
+                                        _filteredUsers = userProvider.users.where((user) {
+                                          final name = user["name"] ?? "";
+                                          return name.toLowerCase().contains(_searchController.text.toLowerCase());
+                                        }).toList();
+
+                                        if (_isFavoriteFilter) {
+                                          _filteredUsers = _filteredUsers
+                                              .where((user) => userProvider.isFavorite(user["id"]))
+                                              .toList();
+                                        }
+                                      });
+                                    });
                                   },
                                 ),
                               ],
