@@ -12,33 +12,18 @@ class ContentList extends StatefulWidget {
 }
 
 class _ContentListState extends State<ContentList> {
-  TextEditingController _searchController = TextEditingController();
+  // Nous n'avons plus besoin de la variable de filtrage.
   List<Map<String, dynamic>> filteredItems = [];
 
   @override
   void initState() {
     super.initState();
 
-    // Use addPostFrameCallback to load users after the initial build
+    // Utilisation de addPostFrameCallback pour charger les utilisateurs après le build initial
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       userProvider.loadUsers();
     });
-  }
-
-  void _filterItems(String query) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (query.isEmpty) {
-      setState(() {
-        filteredItems = List.from(userProvider.users);
-      });
-    } else {
-      setState(() {
-        filteredItems = userProvider.users.where((item) {
-          return item["distanceKm"].toString().startsWith(query);
-        }).toList();
-      });
-    }
   }
 
   @override
@@ -49,6 +34,7 @@ class _ContentListState extends State<ContentList> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    // Initialiser filteredItems avec tous les utilisateurs disponibles
     filteredItems = userProvider.users;
 
     return Scaffold(
@@ -57,19 +43,9 @@ class _ContentListState extends State<ContentList> {
           SliverAppBar(
             floating: true,
             pinned: true,
-            title: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: const InputDecoration(
-                  labelText: "Filtrer par distance (km)",
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
-                  contentPadding: EdgeInsets.symmetric(vertical: 9.0),
-                ),
-                keyboardType: TextInputType.number,
-                onChanged: _filterItems,
-              ),
+            title: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text("Utilisateurs", style: TextStyle(fontSize: 20)),
             ),
           ),
           SliverList(
