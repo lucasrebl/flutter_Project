@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart' as geo;
-import 'package:flutter/services.dart'; // Pour rootBundle
-import 'dart:typed_data'; // Pour manipuler les données d'image
-
+import 'dart:typed_data';
+import '../providers/user_provider.dart';
+import '../services/location_service.dart';
 
 class MapsPage extends StatefulWidget {
   const MapsPage({super.key});
@@ -25,7 +27,7 @@ class _MapsPageState extends State<MapsPage> {
   }
 
   Future<void> _initMap() async {
-    _currentPosition = await _getUserLocation(); // Obtention de la position de l'utilisateur
+    _currentPosition = await LocationService.getUserLocation();
 
     setState(() {
       mapWidget = MapWidget(
@@ -38,13 +40,12 @@ class _MapsPageState extends State<MapsPage> {
         ),
         onMapCreated: (MapboxMap map) async {
           mapboxMap = map;
-          _enableLocation(); // Activation de la localisation
-          await _addAnnotation(); // Ajout de l'annotation
+          _enableLocation();
+          await _addAnnotationsForUsers();
         },
       );
     });
 
-    // Écoute des changements de position de l'utilisateur
     geo.Geolocator.getPositionStream(
       locationSettings: geo.LocationSettings(
         accuracy: geo.LocationAccuracy.high,
@@ -54,45 +55,40 @@ class _MapsPageState extends State<MapsPage> {
       setState(() {
         _currentPosition = position;
       });
-      _updateCameraPosition(position); // Mise à jour de la caméra avec la nouvelle position
+      _updateCameraPosition(position);
     });
   }
 
-  // Fonction pour ajouter une annotation à la carte
-  Future<void> _addAnnotation() async {
-    pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
+  Future<void> _addAnnotationsForUsers() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final users = userProvider.users;
 
-    // Charger l'image depuis les assets
-    final ByteData bytes = await rootBundle.load('assets/marker.png');
-    final Uint8List imageData = bytes.buffer.asUint8List();
+    if (users.isNotEmpty) {
+      final ByteData bytes = await rootBundle.load('assets/marker.png');
+      final Uint8List imageData = bytes.buffer.asUint8List();
 
-    // Créer les options pour l'annotation
-    PointAnnotationOptions pointAnnotationOptions = PointAnnotationOptions(
-        geometry: Point(coordinates: Position(2.3522, 48.8566)), // Exemples de coordonnées (Paris)
-        image: imageData,
-        iconSize: 0.1,
-        iconAnchor: IconAnchor.BOTTOM
-    );
+      pointAnnotationManager = await mapboxMap.annotations.createPointAnnotationManager();
 
-    // Ajouter l'annotation à la carte
-    pointAnnotationManager?.create(pointAnnotationOptions);
-  }
+      for (var user in users) {
+        final latitude = user['latitude'];
+        final longitude = user['longitude'];
 
-  // Fonction pour obtenir la position de l'utilisateur
-  Future<geo.Position> _getUserLocation() async {
-    geo.LocationPermission permission = await geo.Geolocator.checkPermission();
+        if (latitude != null && longitude != null) {
+          PointAnnotationOptions pointAnnotationOptions = PointAnnotationOptions(
+            geometry: Point(coordinates: Position(longitude, latitude)),
+            image: imageData,
+            iconSize: 0.1,
+            iconAnchor: IconAnchor.BOTTOM,
+          );
 
-    if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
-      permission = await geo.Geolocator.requestPermission();
-      if (permission == geo.LocationPermission.denied || permission == geo.LocationPermission.deniedForever) {
-        throw Exception("Permission de localisation refusée");
+          pointAnnotationManager?.create(pointAnnotationOptions);
+        }
       }
+    } else {
+      print("Aucun utilisateur trouvé");
     }
-
-    return await geo.Geolocator.getCurrentPosition();
   }
 
-  // Fonction pour activer la fonctionnalité de localisation
   void _enableLocation() {
     mapboxMap.location.updateSettings(LocationComponentSettings(
       enabled: true,
@@ -101,7 +97,6 @@ class _MapsPageState extends State<MapsPage> {
     ));
   }
 
-  // Fonction pour mettre à jour la position de la caméra en fonction de la position de l'utilisateur
   void _updateCameraPosition(geo.Position position) {
     mapboxMap.flyTo(
       CameraOptions(
@@ -112,9 +107,8 @@ class _MapsPageState extends State<MapsPage> {
     );
   }
 
-  // Fonction pour recentrer la carte
   void _recenterMap() async {
-    geo.Position position = await _getUserLocation();
+    geo.Position position = await LocationService.getUserLocation();
     mapboxMap.flyTo(
       CameraOptions(
         center: Point(coordinates: Position(position.longitude, position.latitude)),

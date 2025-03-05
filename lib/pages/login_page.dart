@@ -3,8 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'home_page.dart';
-
-final supabase = Supabase.instance.client;
+import '../services/database_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,11 +19,9 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    // Vérifier l'état de la session à l'initialisation
     final session = supabase.auth.currentSession;
     if (session != null) {
       _userId = session.user.id;
-      // Si l'utilisateur est déjà connecté, redirige vers la page d'accueil
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
@@ -33,13 +30,11 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
 
-    // Écouter les changements d'état de l'authentification
     supabase.auth.onAuthStateChange.listen((data) {
       setState(() {
         _userId = data.session?.user.id;
       });
 
-      // Si l'utilisateur est connecté, redirige vers la page d'accueil
       if (_userId != null) {
         Navigator.pushReplacement(
           context,
@@ -73,6 +68,11 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (response.session != null) {
+      final user = response.user;
+      if (user != null) {
+        await DatabaseService.insertUserIfNotExists(user);
+      }
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
