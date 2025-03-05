@@ -12,14 +12,11 @@ class ContentList extends StatefulWidget {
 }
 
 class _ContentListState extends State<ContentList> {
-  // Nous n'avons plus besoin de la variable de filtrage.
-  List<Map<String, dynamic>> filteredItems = [];
-
   @override
   void initState() {
     super.initState();
 
-    // Utilisation de addPostFrameCallback pour charger les utilisateurs après le build initial
+    // Charger les utilisateurs après le build initial
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       userProvider.loadUsers();
@@ -33,9 +30,6 @@ class _ContentListState extends State<ContentList> {
     if (userProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-
-    // Initialiser filteredItems avec tous les utilisateurs disponibles
-    filteredItems = userProvider.users;
 
     return Scaffold(
       body: CustomScrollView(
@@ -51,23 +45,27 @@ class _ContentListState extends State<ContentList> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
                   (context, index) {
+                final user = userProvider.users[index];
+                final userId = user["id"];
+                final isFavorite = userProvider.isFavorite(userId);
+
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => DetailScreen(
-                          title: filteredItems[index]["name"] ?? "Nom inconnu",
-                          phoneNumber: filteredItems[index]["phone_number"] ?? "Numéro non disponible",
-                          imageUrl: filteredItems[index]["avatar_url"] ??
+                          title: user["name"] ?? "Nom inconnu",
+                          phoneNumber: user["phone_number"] ?? "Numéro non disponible",
+                          imageUrl: user["avatar_url"] ??
                               "https://picsum.photos/200/300?random=${Random().nextInt(1000)}",
-                          distanceKm: filteredItems[index]["distanceKm"].toString(),
-                          email: filteredItems[index]["email"] ?? "Email non disponible",
-                          description: filteredItems[index]["description"] ?? "Pas de description",
-                          age: filteredItems[index]["age"] ?? 0,
-                          profession: filteredItems[index]["profession"] ?? "Inconnu",
-                          latitude: filteredItems[index]["latitude"] ?? 0.0,
-                          longitude: filteredItems[index]["longitude"] ?? 0.0,
+                          distanceKm: user["distanceKm"].toString(),
+                          email: user["email"] ?? "Email non disponible",
+                          description: user["description"] ?? "Pas de description",
+                          age: user["age"] ?? 0,
+                          profession: user["profession"] ?? "Inconnu",
+                          latitude: user["latitude"] ?? 0.0,
+                          longitude: user["longitude"] ?? 0.0,
                         ),
                       ),
                     );
@@ -78,27 +76,41 @@ class _ContentListState extends State<ContentList> {
                       leading: CircleAvatar(
                         radius: 25,
                         backgroundImage: NetworkImage(
-                          filteredItems[index]["avatar_url"] ??
+                          user["avatar_url"] ??
                               "https://picsum.photos/200/300?random=${Random().nextInt(1000)}",
                         ),
                       ),
                       title: Text(
-                        filteredItems[index]["name"] ?? "Nom inconnu",
+                        user["name"] ?? "Nom inconnu",
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        "📞 ${filteredItems[index]["phone_number"] ?? "Numéro non disponible"}",
+                        "📞 ${user["phone_number"] ?? "Numéro non disponible"}",
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                      trailing: Text(
-                        "${filteredItems[index]["distanceKm"]} km",
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "${user["distanceKm"]} km",
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.grey,
+                            ),
+                            onPressed: () {
+                              userProvider.toggleFavorite(userId);
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 );
               },
-              childCount: filteredItems.length,
+              childCount: userProvider.users.length,
             ),
           ),
         ],
