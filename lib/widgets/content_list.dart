@@ -66,6 +66,7 @@ class _ContentListState extends State<ContentList> {
                           profession: user["profession"] ?? "Inconnu",
                           latitude: user["latitude"] ?? 0.0,
                           longitude: user["longitude"] ?? 0.0,
+                          userId: user["id"],
                         ),
                       ),
                     );
